@@ -1,0 +1,75 @@
+---
+layout: default
+---
+
+<!-- Wrapper -->
+<div id="wrapper">
+
+    <!-- Header -->
+    
+        <header id="header">
+            <h1><a href="index.html"><strong>{{ site.header.title }}</strong> {{ site.header.subtitle }}</a></h1>
+            <link rel="icon" href="./assets/cam.png" type="image/png">
+    		<meta name="title" content="Zdjęcia Krzysia">
+            	<meta name="description" content="Zawsze lubiłem robić zdjęcia, teraz możecie je oglądać.">
+            	<meta name="theme-color" content="#ffffff">
+            	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+            	<meta property="og:type" content="website">
+            	<meta property="og:url" content="https://zdjeciakrzysia.pl">
+            	<meta property="og:title" content="Zdjęcia Krzysia">
+            	<meta property="og:description" content="">
+                <nav>
+                <ul>
+                    <li><a href="#footer" class="icon fa-info-circle">O mnie</a></li>
+                </ul>
+            </nav>
+        </header>
+    
+    <!-- Main -->
+    <div id="main">
+        {% for image in site.static_files %}
+        {% if image.path contains page.dir %}
+        {% if image.path contains 'fulls' %}
+        <article class="thumb">
+            <a href="{{ site.baseurl }}{{ page.dir }}fulls/{{ image.name }}" class="image">
+                <img src="{{ site.baseurl }}{{ page.dir }}thumbs/{{ image.name }}" alt=""
+                     data-name="{{ image.name }}"/></a>
+        </article>
+        {% endif %}
+        {% endif %}
+        {% endfor %}
+    </div>
+
+    <!-- Footer -->
+    <footer id="footer" class="panel">
+        <div class="inner split">
+            <div>
+                <section>
+                    <h2>{{ site.footer.name }}</h2>
+                    <p>{{ site.footer.bio }}</p>
+                    <p>{{ site.footer.github }}</p>
+                </section>
+                <section>
+                    <h2>Skontaktuj się ze mną tutaj:</h2>
+                    <ul class="icons">
+                            <li>
+                                <a href="https://www.instagram.com/zdjeciakrzysia" class="icon fa-instagram">
+                                    <span class="label">Instagram</span>
+                                </a>
+                            </li>
+
+                            <li>
+                                <a href="mailto:kontaktdokrzysia@gmail.com" class="icon fa-envelope">
+                                    <span class="label">Mail</span>
+                                </a>
+                            </li>
+                    </ul>
+                </section>
+                <p class="copyright">
+                    &copy; {{ site.author }}
+                </p>
+            </div>
+        </div>
+    </footer>
+</div>
