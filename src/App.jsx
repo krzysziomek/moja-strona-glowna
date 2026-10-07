@@ -5,8 +5,6 @@ import CategorySwitchers from './components/CategorySwitchers.jsx';
 import CollectionCard from './components/CollectionCard.jsx';
 import GalleryView from './components/GalleryView.jsx';
 import Lightbox from './components/Lightbox.jsx';
-import ContactModal from './components/ContactModal.jsx';
-import AddGuideModal from './components/AddGuideModal.jsx';
 import Footer from './components/Footer.jsx';
 
 export default function App() {
@@ -15,8 +13,6 @@ export default function App() {
   const [selectedCategory, setSelectedCategory] = useState('Przyrodnicze');
   const [activeCollectionId, setActiveCollectionId] = useState(null);
   const [lightboxIndex, setLightboxIndex] = useState(null);
-  const [contactOpen, setContactOpen] = useState(false);
-  const [guideOpen, setGuideOpen] = useState(false);
 
   useEffect(() => {
     import('./data/collections.json')
@@ -92,7 +88,6 @@ export default function App() {
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <Header
         onGoHome={handleGoHome}
-        onOpenContact={() => setContactOpen(true)}
         title="Zdjęcia Krzysia"
         subtitle={activeCollection ? activeCollection.title : "Fotografia jest moją pasją"}
       />
@@ -155,19 +150,7 @@ export default function App() {
         />
       )}
 
-      {/* Modale */}
-      {contactOpen && (
-        <ContactModal onClose={() => setContactOpen(false)} />
-      )}
-
-      {guideOpen && (
-        <AddGuideModal onClose={() => setGuideOpen(false)} />
-      )}
-
-      <Footer
-        onOpenContact={() => setContactOpen(true)}
-        onOpenGuide={() => setGuideOpen(true)}
-      />
+      <Footer />
     </div>
   );
 }

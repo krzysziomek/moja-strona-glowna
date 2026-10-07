@@ -1,7 +1,6 @@
 import React from 'react';
-import { Home, Mail } from 'lucide-react';
 
-export default function Header({ onGoHome, onOpenContact, title, subtitle }) {
+export default function Header({ onGoHome, title, subtitle }) {
   return (
     <header className="site-header">
       <div className="container">

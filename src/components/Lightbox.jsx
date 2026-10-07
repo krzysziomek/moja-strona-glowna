@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useCallback } from 'react';
-import { X, ChevronLeft, ChevronRight, Download } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 
 export default function Lightbox({ photos, currentIndex, onClose, onNavigate }) {
   const currentPhoto = photos[currentIndex];
@@ -35,28 +35,16 @@ export default function Lightbox({ photos, currentIndex, onClose, onNavigate }) 
 
   return (
     <div className="lightbox-overlay">
-      <div className="lightbox-header">
-        <div className="lightbox-counter">
-          Zdjęcie {currentIndex + 1} z {photos.length} ({currentPhoto.filename})
-        </div>
+      {/* Floating close button */}
+      <button 
+        className="lightbox-close-btn" 
+        onClick={onClose} 
+        title="Zamknij (Esc)"
+      >
+        <X size={26} />
+      </button>
 
-        <div className="lightbox-header-actions">
-          <a
-            href={currentPhoto.full}
-            download={currentPhoto.filename}
-            className="lightbox-btn"
-            title="Pobierz zdjęcie"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Download size={20} />
-          </a>
-          <button className="lightbox-btn" onClick={onClose} title="Zamknij (Esc)">
-            <X size={26} />
-          </button>
-        </div>
-      </div>
-
+      {/* Main Image Viewport */}
       <div className="lightbox-main" onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}>
@@ -93,6 +81,7 @@ export default function Lightbox({ photos, currentIndex, onClose, onNavigate }) 
         )}
       </div>
 
+      {/* Miniaturki na dole */}
       <div className="lightbox-thumbs-bar" ref={barRef}>
         {photos.map((p, idx) => (
           <div
