@@ -211,7 +211,22 @@ def process_collection(collection_dir, root_dir):
 
     # 4. Resolve cover image
     cover = specified_cover
-    if not cover:
+    
+    # If cover was set to just a filename (e.g. '53.webp')
+    if cover and not cover.endswith('/') and '/' not in cover:
+        candidate = f"collections/{slug}/thumbs/{cover}"
+        if (Path(root_dir) / 'public' / candidate).exists():
+            cover = candidate
+        elif (fulls_dir / cover).exists():
+            cover = f"collections/{slug}/fulls/{cover}"
+
+    # Verify if cover is valid and not just an empty directory ending with '/'
+    is_valid_cover = False
+    if cover and not cover.endswith('/'):
+        if (Path(root_dir) / 'public' / cover).exists() or (Path(root_dir) / cover).exists():
+            is_valid_cover = True
+
+    if not is_valid_cover:
         # Check img/<slug>.webp
         img_cover = Path(root_dir) / 'public' / 'img' / f"{slug}.webp"
         if img_cover.exists():
@@ -245,47 +260,129 @@ def process_collection(collection_dir, root_dir):
         'items': items
     }, new_count
 
-def main():
-    parser = argparse.ArgumentParser(description="Zarządzaj zdjęciami i kolekcjami w Zdjęcia Krzysia")
-    parser.add_argument('--create', type=str, help="Utwórz nowy folder kolekcji, np. --create 'Tatry 2026'")
-    parser.add_argument('--category', type=str, default="Przyrodnicze", help="Kategoria nowej kolekcji (Przyrodnicze, Wydarzenia, Inne)")
-    parser.add_argument('--date', type=str, default="", help="Rok/data nowej kolekcji (domyślnie bieżący rok)")
-    args = parser.parse_args()
+def parse_create_command(raw_args):
+    """
+    Inteligentny parser dla komendy tworzenia kolekcji.
+    Obsługuje dowolny format:
+      npm run new-collection "Nazwa Albumu" "Przyrodnicze"
+      python scripts/process_images.py --create Nazwa Albumu Przyrodnicze
+      python scripts/process_images.py --create "Nazwa" --category "Wydarzenia"
+    """
+    if not any(arg in ('--create', '-c', 'create') for arg in raw_args):
+        return None
 
+    filtered = []
+    category = None
+    date_str = None
+
+    i = 0
+    while i < len(raw_args):
+        arg = raw_args[i]
+        if arg in ('--create', '-c', 'create'):
+            i += 1
+            continue
+        if arg in ('--category', '-cat'):
+            if i + 1 < len(raw_args):
+                category = raw_args[i + 1]
+                i += 2
+                continue
+        if arg in ('--date', '-d'):
+            if i + 1 < len(raw_args):
+                date_str = raw_args[i + 1]
+                i += 2
+                continue
+        filtered.append(arg)
+        i += 1
+
+    words = []
+    for item in filtered:
+        lower = item.strip().lower()
+        if lower in ('przyrodnicze', 'przyroda'):
+            if not category:
+                category = 'Przyrodnicze'
+                continue
+        elif lower in ('wydarzenia', 'ludzie'):
+            if not category:
+                category = 'Wydarzenia'
+                continue
+        elif lower in ('inne', 'rozne', 'różne'):
+            if not category:
+                category = 'Inne'
+                continue
+        elif re.fullmatch(r'20\d\d', item.strip()) and not date_str:
+            date_str = item.strip()
+            continue
+        words.append(item)
+
+    title = " ".join(words).strip()
+    if not title:
+        title = "Nowa Kolekcja"
+
+    if not category:
+        category = "Przyrodnicze"
+
+    if not date_str:
+        year_match = re.search(r'\b(20\d\d)\b', title)
+        date_str = year_match.group(1) if year_match else "2026"
+
+    return {
+        'title': title,
+        'category': category,
+        'date': date_str
+    }
+
+def main():
     repo_root = Path(__file__).resolve().parent.parent
     collections_root = repo_root / 'public' / 'collections'
     collections_root.mkdir(parents=True, exist_ok=True)
 
-    if args.create:
-        title = args.create.strip()
+    create_info = parse_create_command(sys.argv[1:])
+
+    if create_info:
+        title = create_info['title']
+        category = create_info['category']
+        date_str = create_info['date']
         slug = slugify(title)
         col_dir = collections_root / slug
+
         if col_dir.exists():
-            print(f"[!] Kolekcja '{slug}' już istnieje w {col_dir}!")
+            print(f"\n[!] Kolekcja '{slug}' już istnieje w {col_dir}")
+            meta_file = col_dir / 'meta.json'
+            if meta_file.exists():
+                try:
+                    with open(meta_file, 'r', encoding='utf-8') as f:
+                        existing = json.load(f)
+                    existing['title'] = title
+                    existing['category'] = category
+                    existing['date'] = date_str
+                    with open(meta_file, 'w', encoding='utf-8') as f:
+                        json.dump(existing, f, ensure_ascii=False, indent=2)
+                    print(f"    Zaktualizowano meta.json: Kategoria={category}, Data={date_str}\n")
+                except Exception as e:
+                    print(f"    Błąd aktualizacji meta.json: {e}\n")
             return
-            
+
         col_dir.mkdir(parents=True)
         (col_dir / 'raw').mkdir()
         (col_dir / 'fulls').mkdir()
         (col_dir / 'thumbs').mkdir()
-        
-        date_str = args.date if args.date else "2026"
+
         meta = {
             'title': title,
-            'category': args.category,
+            'category': category,
             'date': date_str,
             'cover': '',
             'description': ''
         }
         with open(col_dir / 'meta.json', 'w', encoding='utf-8') as f:
             json.dump(meta, f, ensure_ascii=False, indent=2)
-            
+
         print("\n" + "="*60)
         print(f" Utworzono nową kolekcję: {title}")
         print(f" Folder: {col_dir}")
-        print(f" Kategoria: {args.category} | Data: {date_str}")
+        print(f" Kategoria: {category} | Data: {date_str}")
         print("="*60)
-        print("👉 KROK 1: Wrzuć zdjęcia (JPG, PNG, WebP) do tego folderu:")
+        print("👉 KROK 1: Wrzuć zdjęcia (JPG, PNG, WebP) do folderu:")
         print(f"          {col_dir}")
         print("👉 KROK 2: Uruchom w terminalu:")
         print("          npm run process-images")
@@ -301,7 +398,7 @@ def main():
     total_photos = 0
 
     col_dirs = sorted([d for d in collections_root.iterdir() if d.is_dir() and not d.name.startswith('.')])
-    
+
     for col_dir in col_dirs:
         col_data, new_count = process_collection(col_dir, repo_root)
         collections.append(col_data)
@@ -309,8 +406,7 @@ def main():
         total_photos += col_data['itemCount']
         print(f"[{col_data['category']:<12}] {col_data['title']:<28} ({col_data['itemCount']} zdjęć)")
 
-    # Sort collections: custom order or newest first by date
-    # Let's sort by date descending, then title
+    # Sort collections by date descending, then title
     collections.sort(key=lambda c: (str(c.get('date', '0')), c.get('title', '')), reverse=True)
 
     # Save to public/data/collections.json and src/data/collections.json
@@ -338,3 +434,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
