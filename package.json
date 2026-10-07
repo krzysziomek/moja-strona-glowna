@@ -1,36 +1,25 @@
 {
-  "name": "photography",
-  "version": "3.0.0",
-  "description": "A jekyll website for photographer",
-  "main": "npmfile.js",
+  "name": "zdjeciakrzysia",
+  "private": true,
+  "version": "4.0.0",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "deploy": "gh-pages -d dist",
+    "process-images": "python scripts/process_images.py",
+    "sync": "python scripts/process_images.py",
+    "new-collection": "python scripts/process_images.py --create"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/ramswaroop/photography.git"
+  "dependencies": {
+    "lucide-react": "^1.16.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
   },
-  "keywords": [
-    "photography",
-    "jekyll",
-    "website",
-    "template",
-    "website template",
-    "portfolio",
-    "portfolio website"
-  ],
-  "author": "Ram Patra",
-  "license": "GPL-3.0",
-  "bugs": {
-    "url": "https://github.com/ramswaroop/photography/issues"
-  },
-  "homepage": "https://github.com/ramswaroop/photography#readme",
   "devDependencies": {
-    "del": "^2.2.2",
-    "gulp": "^4.0.2",
-    "gulp-image-resize": "^0.13.1",
-    "gulp-rename": "^1.2.2",
-    "gulp-sass": "^3.1.0",
-    "gulp-uglify": "^3.0.0"
+    "@vitejs/plugin-react": "^4.3.4",
+    "gh-pages": "^6.3.0",
+    "vite": "^6.2.0"
   }
 }

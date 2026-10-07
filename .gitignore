@@ -76,3 +76,15 @@ jspm_packages
 .node_repl_history
 
 /Gemfile.lock
+
+# Vite build
+dist/
+dist-ssr/
+
+# Python & Build cache
+__pycache__/
+*.py[cod]
+*$py.class
+**/.cache.json
+.cache.json
+
